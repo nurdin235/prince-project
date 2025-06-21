@@ -1,21 +1,6 @@
 /* css/styles.css */
 
-/* --- Variables --- */
-:root {
-    --primary-color: #2F80ED; /* Dark blue/grey */
-    --secondary-color: #56CCF2; /* Bright blue */
-    --accent-color: #F9FAFB; /* Red/Orange accent */
-    --text-color: #1F2937;
-    --light-gray: #f8f8f8;
-    --dark-gray: #555;
-    --white: #fff;
-    --border-radius: 8px;
-    --transition-speed: 0.3s ease-in-out;
-    --box-shadow-light: 0 4px 10px rgba(0, 0, 0, 0.08);
-    --box-shadow-medium: 0 6px 15px rgba(0, 0, 0, 0.1);
-    --font-open-sans: 'Open Sans', sans-serif;
-    --font-montserrat: 'Montserrat', sans-serif;
-}
+
 
 /* css/styles.css - At the very top of your file */
 
