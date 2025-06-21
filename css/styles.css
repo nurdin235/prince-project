@@ -2,10 +2,10 @@
 
 /* --- Variables --- */
 :root {
-    --primary-color: #2c3e50; /* Dark blue/grey */
-    --secondary-color: #3498db; /* Bright blue */
-    --accent-color: #e74c3c; /* Red/Orange accent */
-    --text-color: #333;
+    --primary-color: #2F80ED; /* Dark blue/grey */
+    --secondary-color: #56CCF2; /* Bright blue */
+    --accent-color: #F9FAFB; /* Red/Orange accent */
+    --text-color: #1F2937;
     --light-gray: #f8f8f8;
     --dark-gray: #555;
     --white: #fff;
