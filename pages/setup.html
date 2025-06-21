@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Setup - School Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🏫 School Setup</h1>
+        <nav>
+            <a href="index.htm">Setup</a>
+            <a href="register.html">Register Student</a>
+            <a href="manage.html">Manage Students</a>
+        </nav>
+
+        <form id="schoolSetupForm">
+            <div class="form-group">
+                <label for="schoolName">School Name:</label>
+                <input type="text" id="schoolName" required>
+            </div>
+            <div class="form-group">
+                <label for="academicYear">Academic Year:</label>
+                <input type="text" id="academicYear" placeholder="e.g., 2024-2025" required>
+            </div>
+            <div class="form-group">
+                <label for="schoolLogoUrl">School Logo URL (Optional):</label>
+                <input type="text" id="schoolLogoUrl" placeholder="e.g., https://example.com/logo.png">
+            </div>
+            <button type="submit">Save Settings</button>
+        </form>
+        <div id="message" style="display: none;"></div>
+    </div>
+
+    <script>
+        // JavaScript for School Setup Page (index.html)
+        document.addEventListener('DOMContentLoaded', () => {
+            const schoolSetupForm = document.getElementById('schoolSetupForm');
+            const schoolNameInput = document.getElementById('schoolName');
+            const academicYearInput = document.getElementById('academicYear');
+            const schoolLogoUrlInput = document.getElementById('schoolLogoUrl');
+            const messageDiv = document.getElementById('message');
+
+            // Function to display messages
+            function showMessage(msg, type) {
+                messageDiv.textContent = msg;
+                messageDiv.className = `message ${type}`;
+                messageDiv.style.display = 'block';
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000); // Hide after 3 seconds
+            }
+
+            // Load existing school info from Local Storage
+            const savedSchoolInfo = localStorage.getItem('schoolInfo');
+            if (savedSchoolInfo) {
+                const schoolInfo = JSON.parse(savedSchoolInfo);
+                schoolNameInput.value = schoolInfo.name || '';
+                academicYearInput.value = schoolInfo.academicYear || '';
+                schoolLogoUrlInput.value = schoolInfo.logoUrl || '';
+            }
+
+            // Handle form submission
+            schoolSetupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const schoolName = schoolNameInput.value.trim();
+                const academicYear = academicYearInput.value.trim();
+                const schoolLogoUrl = schoolLogoUrlInput.value.trim();
+
+                if (!schoolName || !academicYear) {
+                    showMessage('Please fill in both School Name and Academic Year.', 'error');
+                    return;
+                }
+
+                const schoolInfo = {
+                    name: schoolName,
+                    academicYear: academicYear,
+                    logoUrl: schoolLogoUrl
+                };
+
+                localStorage.setItem('schoolInfo', JSON.stringify(schoolInfo));
+                showMessage('School settings saved successfully!', 'success');
+            });
+        });
+    </script>
+</body>
+</html>

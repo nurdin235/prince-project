@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> School Management System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles if absolutely necessary, but prioritize Tailwind */
+        body {
+            font-family: "Inter", sans-serif;
+        }
+        /* Hide sections initially, controlled by JS */
+        .page-section {
+            display: none;
+        }
+        .page-section.active {
+            display: block;
+        }
+        /* Style for required asterisk, if needed for clarity */
+        label.required::after {
+            content: '*';
+            margin-left: 4px;
+            color: red;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation Header -->
+    <nav class="bg-blue-800 p-4 shadow-md">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-white text-3xl font-bold mb-4 md:mb-0">School MS Admin</h1>
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+                <button id="navSetupBtn" class="px-4 py-2 rounded-md transition duration-150 ease-in-out bg-blue-600 text-white hover:bg-blue-700 active-nav-btn">
+                    School Setup
+                </button>
+                <button id="navRegisterBtn" class="px-4 py-2 rounded-md transition duration-150 ease-in-out bg-blue-600 text-white hover:bg-blue-700">
+                    Register Student
+                </button>
+                <button id="navDirectoryBtn" class="px-4 py-2 rounded-md transition duration-150 ease-in-out bg-blue-600 text-white hover:bg-blue-700">
+                    Student Directory
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto p-4">
+
+        <!-- Message Display Area (for success/error/info) -->
+        <div id="appMessage" class="hidden p-3 mt-4 rounded-md text-sm" role="alert"></div>
+
+        <!-- School Setup Section -->
+        <section id="schoolSetupPage" class="page-section active min-h-[calc(100vh-160px)] flex items-center justify-center p-4 md:p-8">
+            <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+                <h2 class="text-3xl font-extrabold text-center text-blue-800 mb-6">School Setup</h2>
+                <p class="text-gray-600 text-center mb-8">Configure your school's primary details and available classes.</p>
+
+                <form id="schoolSetupForm" class="space-y-6">
+                    <div>
+                        <label for="schoolName" class="block text-gray-700 text-sm font-bold mb-2 required">School Name</label>
+                        <input
+                            type="text"
+                            id="schoolName"
+                            class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., Elite Academy"
+                            required
+                        >
+                    </div>
+                    <div>
+                        <label for="schoolLocation" class="block text-gray-700 text-sm font-bold mb-2 required">School Location (Full Address)</label>
+                        <textarea
+                            id="schoolLocation"
+                            class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 h-24 resize-y"
+                            placeholder="e.g., 123 Main St, Anytown, State, Country"
+                            required
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label for="availableClasses" class="block text-gray-700 text-sm font-bold mb-2 required">Available Classes (Comma-separated)</label>
+                        <textarea
+                            id="availableClasses"
+                            class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 h-24 resize-y"
+                            placeholder="e.g., Grade 1, Grade 2, Mathematics, Science"
+                            required
+                        ></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Separate classes with a comma (e.g., Grade 1, Grade 2, Algebra)</p>
+                    </div>
+                    <button
+                        type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+                    >
+                        Save School Configuration
+                    </button>
+                    <button
+                        type="button"
+                        id="clearAllDataBtn"
+                        class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-150 ease-in-out mt-4"
+                    >
+                        Clear All Data
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Student Registration Section -->
+        <section id="studentRegistrationPage" class="page-section min-h-[calc(100vh-160px)] flex items-center justify-center p-4 md:p-8">
+            <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+                <h2 class="text-3xl font-extrabold text-center text-blue-800 mb-6">Register New Student</h2>
+                <p class="text-gray-600 text-center mb-8">Enter the details for the new student.</p>
+
+                <div id="studentRegPreReqMessage" class="hidden bg-red-100 text-red-700 p-4 rounded-md mb-6">
+                    <p class="text-center font-semibold">School configuration is missing or incomplete.</p>
+                    <p class="text-center mt-2">Please go to "School Setup" to configure available classes before registering students.</p>
+                    <div class="text-center mt-4">
+                        <button id="goToSetupFromRegisterBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out">
+                            Go to School Setup
+                        </button>
+                    </div>
+                </div>
+
+                <form id="studentRegistrationForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-1">
+                        <label for="studentName" class="block text-gray-700 text-sm font-bold mb-2 required">Student Name</label>
+                        <input type="text" id="studentName" class="form-input" placeholder="Full Name" required />
+                    </div>
+                    <div class="md:col-span-1">
+                        <label for="dob" class="block text-gray-700 text-sm font-bold mb-2 required">Date of Birth</label>
+                        <input type="date" id="dob" class="form-input" required />
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="block text-gray-700 text-sm font-bold mb-2 required">Gender</label>
+                        <div class="flex flex-wrap space-x-4">
+                            <label class="inline-flex items-center">
+                                <input type="radio" class="form-radio text-blue-600" name="gender" value="Male" required />
+                                <span class="ml-2 text-gray-700">Male</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" class="form-radio text-blue-600" name="gender" value="Female" />
+                                <span class="ml-2 text-gray-700">Female</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" class="form-radio text-blue-600" name="gender" value="Other" />
+                                <span class="ml-2 text-gray-700">Other</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="md:col-span-1">
+                        <label for="assignedClass" class="block text-gray-700 text-sm font-bold mb-2 required">Assigned Class</label>
+                        <select id="assignedClass" class="form-input" required>
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-2 border-t pt-6 mt-6 border-gray-200">
+                        <h3 class="text-xl font-semibold text-blue-700 mb-4">Parent/Guardian Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="parentName" class="block text-gray-700 text-sm font-bold mb-2 required">Full Name</label>
+                                <input type="text" id="parentName" class="form-input" placeholder="Parent/Guardian Full Name" required />
+                            </div>
+                            <div>
+                                <label for="parentContact" class="block text-gray-700 text-sm font-bold mb-2 required">Contact Info (Phone/Email)</label>
+                                <input type="text" id="parentContact" class="form-input" placeholder="Phone Number or Email" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2 border-t pt-6 mt-6 border-gray-200">
+                        <h3 class="text-xl font-semibold text-blue-700 mb-4">Emergency Contact Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="emergencyName" class="block text-gray-700 text-sm font-bold mb-2 required">Name</label>
+                                <input type="text" id="emergencyName" class="form-input" placeholder="Emergency Contact Name" required />
+                            </div>
+                            <div>
+                                <label for="emergencyRelationship" class="block text-gray-700 text-sm font-bold mb-2 required">Relationship</label>
+                                <input type="text" id="emergencyRelationship" class="form-input" placeholder="e.g., Mother, Aunt" required />
+                            </div>
+                            <div>
+                                <label for="emergencyPhone" class="block text-gray-700 text-sm font-bold mb-2 required">Phone Number</label>
+                                <input type="text" id="emergencyPhone" class="form-input" placeholder="Phone Number" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2 border-t pt-6 mt-6 border-gray-200">
+                        <label for="studentAddress" class="block text-gray-700 text-sm font-bold mb-2 required">Student Address</label>
+                        <textarea id="studentAddress" class="form-input h-24 resize-y" placeholder="Full Address" required></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="additionalNotes" class="block text-gray-700 text-sm font-bold mb-2">Additional Notes / Medical Conditions</label>
+                        <textarea id="additionalNotes" class="form-input h-24 resize-y" placeholder="Any specific notes or medical conditions"></textarea>
+                    </div>
+
+                    <div class="md:col-span-2 mt-6">
+                        <button
+                            type="submit"
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+                        >
+                            Register Student
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Student Directory Section -->
+        <section id="studentDirectoryPage" class="page-section min-h-[calc(100vh-160px)] flex flex-col items-center p-4 md:p-8">
+            <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
+                <h2 class="text-3xl font-extrabold text-center text-blue-800 mb-6">Student Directory</h2>
+                <p class="text-gray-600 text-center mb-8">View and manage student records by class.</p>
+
+                <div id="studentDirPreReqMessage" class="hidden bg-red-100 text-red-700 p-4 rounded-md mb-6">
+                    <p class="text-center font-semibold">School configuration is missing or incomplete.</p>
+                    <p class="text-center mt-2">Please go to "School Setup" to configure available classes before viewing students.</p>
+                    <div class="text-center mt-4">
+                        <button id="goToSetupFromDirBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out">
+                            Go to School Setup
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label for="classSelect" class="block text-gray-700 text-sm font-bold mb-2">Select Class</label>
+                        <select
+                            id="classSelect"
+                            class="form-input"
+                        >
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="searchStudent" class="block text-gray-700 text-sm font-bold mb-2">Search Student (Name, Parent)</label>
+                        <input
+                            type="text"
+                            id="searchStudent"
+                            class="form-input"
+                            placeholder="Search by student name or parent name/contact"
+                        />
+                    </div>
+                </div>
+
+                <div id="studentListContainer" class="space-y-4">
+                    <!-- Student cards will be rendered here by JavaScript -->
+                    <p id="noStudentsMessage" class="text-center text-gray-500 text-lg mt-10 hidden">No students found for this class or search term.</p>
+                    <p id="generalInfoMessage" class="text-center text-gray-500 text-lg mt-10">Select a class to view students.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript for app logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Helper Functions and LocalStorageService ---
+            const LocalStorageService = {
+                getSchoolConfig: () => {
+                    try {
+                        return JSON.parse(localStorage.getItem('schoolConfig'));
+                    } catch (e) {
+                        console.error("Error parsing school config from localStorage", e);
+                        return null;
+                    }
+                },
+                setSchoolConfig: (config) => {
+                    localStorage.setItem('schoolConfig', JSON.stringify(config));
+                },
+                getStudents: () => {
+                    try {
+                        return JSON.parse(localStorage.getItem('students')) || [];
+                    } catch (e) {
+                        console.error("Error parsing students from localStorage", e);
+                        return [];
+                    }
+                },
+                setStudents: (students) => {
+                    localStorage.setItem('students', JSON.stringify(students));
+                },
+                clearAllData: () => {
+                    localStorage.removeItem('schoolConfig');
+                    localStorage.removeItem('students');
+                }
+            };
+
+            // --- UI Message Handler ---
+            const appMessage = document.getElementById('appMessage');
+            const showMessage = (text, type) => {
+                appMessage.textContent = text;
+                appMessage.className = `p-3 mt-4 rounded-md text-sm ${type === 'error' ? 'bg-red-100 text-red-700' : type === 'success' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`;
+                appMessage.classList.remove('hidden');
+                setTimeout(() => {
+                    appMessage.classList.add('hidden');
+                }, 5000); // Hide after 5 seconds
+            };
+
+            // --- Page Routing ---
+            const navSetupBtn = document.getElementById('navSetupBtn');
+            const navRegisterBtn = document.getElementById('navRegisterBtn');
+            const navDirectoryBtn = document.getElementById('navDirectoryBtn');
+
+            const schoolSetupPage = document.getElementById('schoolSetupPage');
+            const studentRegistrationPage = document.getElementById('studentRegistrationPage');
+            const studentDirectoryPage = document.getElementById('studentDirectoryPage');
+
+            const pages = {
+                'setup': schoolSetupPage,
+                'register': studentRegistrationPage,
+                'directory': studentDirectoryPage
+            };
+            const navButtons = {
+                'setup': navSetupBtn,
+                'register': navRegisterBtn,
+                'directory': navDirectoryBtn
+            };
+
+            const activatePage = (pageId) => {
+                // Deactivate all pages and nav buttons
+                Object.values(pages).forEach(page => page.classList.remove('active'));
+                Object.values(navButtons).forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
+                Object.values(navButtons).forEach(btn => btn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700')); // Reset to default
+
+                // Activate selected page and nav button
+                pages[pageId].classList.add('active');
+                navButtons[pageId].classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                navButtons[pageId].classList.add('bg-blue-500', 'text-white');
+
+                // Update hash in URL
+                window.location.hash = pageId;
+
+                // Specific page loads/updates
+                if (pageId === 'setup') {
+                    loadSchoolConfigToForm();
+                } else if (pageId === 'register') {
+                    checkSchoolConfigAndPopulateClasses();
+                } else if (pageId === 'directory') {
+                    checkSchoolConfigAndLoadStudents();
+                }
+                 showMessage('', ''); // Clear messages on page change
+            };
+
+            // Initial page load based on hash or default
+            const handleHashChange = () => {
+                const hash = window.location.hash.substring(1); // Remove #
+                if (pages[hash]) {
+                    activatePage(hash);
+                } else {
+                    // Default to setup if no valid hash or first load
+                    activatePage('setup');
+                }
+            };
+            window.addEventListener('hashchange', handleHashChange);
+            handleHashChange(); // Call on initial load
+
+            // Attach nav button click listeners
+            navSetupBtn.addEventListener('click', () => activatePage('setup'));
+            navRegisterBtn.addEventListener('click', () => activatePage('register'));
+            navDirectoryBtn.addEventListener('click', () => activatePage('directory'));
+
+            // --- School Setup Logic ---
+            const schoolSetupForm = document.getElementById('schoolSetupForm');
+            const schoolNameInput = document.getElementById('schoolName');
+            const schoolLocationInput = document.getElementById('schoolLocation');
+            const availableClassesInput = document.getElementById('availableClasses');
+            const clearAllDataBtn = document.getElementById('clearAllDataBtn');
+
+            const loadSchoolConfigToForm = () => {
+                const config = LocalStorageService.getSchoolConfig();
+                if (config) {
+                    schoolNameInput.value = config.name;
+                    schoolLocationInput.value = config.location;
+                    availableClassesInput.value = config.classes.join(', ');
+                    showMessage('School is already configured. You can update details below.', 'info');
+                } else {
+                    schoolNameInput.value = '';
+                    schoolLocationInput.value = '';
+                    availableClassesInput.value = '';
+                    showMessage('Please configure your school details to get started.', 'info');
+                }
+            };
+
+            schoolSetupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const name = schoolNameInput.value.trim();
+                const location = schoolLocationInput.value.trim();
+                const classesStr = availableClassesInput.value.trim();
+
+                if (!name || !location || !classesStr) {
+                    showMessage('All fields are required for school configuration.', 'error');
+                    return;
+                }
+
+                const classesArray = classesStr.split(',').map(cls => cls.trim()).filter(cls => cls !== '');
+                if (classesArray.length === 0) {
+                    showMessage('Please enter at least one class.', 'error');
+                    return;
+                }
+
+                const newConfig = {
+                    name: name,
+                    location: location,
+                    classes: classesArray
+                };
+
+                LocalStorageService.setSchoolConfig(newConfig);
+                showMessage('School configuration saved successfully!', 'success');
+            });
+
+            clearAllDataBtn.addEventListener('click', () => {
+                // Use a custom modal or confirmation for better UX instead of window.confirm
+                // For now, using window.confirm as a quick placeholder
+                if (window.confirm('Are you sure you want to clear all school data and students? This action cannot be undone.')) {
+                    LocalStorageService.clearAllData();
+                    loadSchoolConfigToForm(); // Reset form fields
+                    showMessage('All data cleared successfully.', 'success');
+                }
+            });
+
+            // --- Student Registration Logic ---
+            const studentRegistrationForm = document.getElementById('studentRegistrationForm');
+            const studentRegPreReqMessage = document.getElementById('studentRegPreReqMessage');
+            const goToSetupFromRegisterBtn = document.getElementById('goToSetupFromRegisterBtn');
+            const assignedClassSelect = document.getElementById('assignedClass');
+
+            const studentNameInput = document.getElementById('studentName');
+            const dobInput = document.getElementById('dob');
+            const genderInputs = document.querySelectorAll('input[name="gender"]');
+            const parentNameInput = document.getElementById('parentName');
+            const parentContactInput = document.getElementById('parentContact');
+            const emergencyNameInput = document.getElementById('emergencyName');
+            const emergencyRelationshipInput = document.getElementById('emergencyRelationship');
+            const emergencyPhoneInput = document.getElementById('emergencyPhone');
+            const studentAddressInput = document.getElementById('studentAddress');
+            const additionalNotesInput = document.getElementById('additionalNotes');
+
+
+            const checkSchoolConfigAndPopulateClasses = () => {
+                const config = LocalStorageService.getSchoolConfig();
+                if (!config || config.classes.length === 0) {
+                    studentRegistrationForm.classList.add('hidden');
+                    studentRegPreReqMessage.classList.remove('hidden');
+                    showMessage('School classes are not configured. Please go to School Setup.', 'error');
+                } else {
+                    studentRegistrationForm.classList.remove('hidden');
+                    studentRegPreReqMessage.classList.add('hidden');
+                    populateClassDropdown(config.classes);
+                    showMessage('Ready to register a new student.', 'info');
+                }
+            };
+
+            const populateClassDropdown = (classes) => {
+                assignedClassSelect.innerHTML = ''; // Clear existing options
+                if (classes.length > 0) {
+                    classes.forEach(cls => {
+                        const option = document.createElement('option');
+                        option.value = cls;
+                        option.textContent = cls;
+                        assignedClassSelect.appendChild(option);
+                    });
+                }
+            };
+
+            goToSetupFromRegisterBtn.addEventListener('click', () => activatePage('setup'));
+
+            studentRegistrationForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const config = LocalStorageService.getSchoolConfig();
+                if (!config || config.classes.length === 0) {
+                     showMessage('School configuration is missing or incomplete. Cannot register student.', 'error');
+                     return;
+                }
+
+                const studentName = studentNameInput.value.trim();
+                const dob = dobInput.value;
+                let gender = '';
+                genderInputs.forEach(input => {
+                    if (input.checked) {
+                        gender = input.value;
+                    }
+                });
+                const assignedClass = assignedClassSelect.value;
+                const parentName = parentNameInput.value.trim();
+                const parentContact = parentContactInput.value.trim();
+                const emergencyName = emergencyNameInput.value.trim();
+                const emergencyRelationship = emergencyRelationshipInput.value.trim();
+                const emergencyPhone = emergencyPhoneInput.value.trim();
+                const studentAddress = studentAddressInput.value.trim();
+                const additionalNotes = additionalNotesInput.value.trim();
+
+                if (!studentName || !dob || !gender || !assignedClass ||
+                    !parentName || !parentContact || !emergencyName ||
+                    !emergencyRelationship || !emergencyPhone || !studentAddress) {
+                    showMessage('Please fill all required fields.', 'error');
+                    return;
+                }
+
+                const newStudent = {
+                    id: `stu_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Simple unique ID
+                    name: studentName,
+                    dob: dob,
+                    gender: gender,
+                    assignedClass: assignedClass,
+                    parentName: parentName,
+                    parentContact: parentContact,
+                    emergencyContact: {
+                        name: emergencyName,
+                        relationship: emergencyRelationship,
+                        phone: emergencyPhone
+                    },
+                    address: studentAddress,
+                    notes: additionalNotes
+                };
+
+                const currentStudents = LocalStorageService.getStudents();
+                LocalStorageService.setStudents([...currentStudents, newStudent]);
+                showMessage(`Student '${studentName}' registered successfully!`, 'success');
+                studentRegistrationForm.reset(); // Clear form fields
+                // Reset gender radio buttons
+                genderInputs.forEach(input => input.checked = false);
+                if (config.classes.length > 0) {
+                    assignedClassSelect.value = config.classes[0]; // Reset to first class
+                }
+            });
+
+            // --- Student Directory Logic ---
+            const classSelectDir = document.getElementById('classSelect');
+            const searchStudentInput = document.getElementById('searchStudent');
+            const studentListContainer = document.getElementById('studentListContainer');
+            const noStudentsMessage = document.getElementById('noStudentsMessage');
+            const generalInfoMessage = document.getElementById('generalInfoMessage');
+            const studentDirPreReqMessage = document.getElementById('studentDirPreReqMessage');
+            const goToSetupFromDirBtn = document.getElementById('goToSetupFromDirBtn');
+
+            const checkSchoolConfigAndLoadStudents = () => {
+                const config = LocalStorageService.getSchoolConfig();
+                if (!config || config.classes.length === 0) {
+                    // Hide directory UI, show pre-req message
+                    classSelectDir.innerHTML = ''; // Clear dropdown
+                    studentListContainer.innerHTML = ''; // Clear student list
+                    classSelectDir.classList.add('hidden');
+                    searchStudentInput.classList.add('hidden');
+                    studentDirPreReqMessage.classList.remove('hidden');
+                    showMessage('School classes are not configured. Please set up your school.', 'error');
+                } else {
+                    // Show directory UI, hide pre-req message
+                    classSelectDir.classList.remove('hidden');
+                    searchStudentInput.classList.remove('hidden');
+                    studentDirPreReqMessage.classList.add('hidden');
+                    populateClassDropdownDir(config.classes);
+                    filterAndDisplayStudents(); // Load students based on default class
+                }
+            };
+
+            const populateClassDropdownDir = (classes) => {
+                classSelectDir.innerHTML = ''; // Clear existing options
+                if (classes.length > 0) {
+                    classes.forEach(cls => {
+                        const option = document.createElement('option');
+                        option.value = cls;
+                        option.textContent = cls;
+                        classSelectDir.appendChild(option);
+                    });
+                    // Set initial selected class if not already set
+                    if (!classSelectDir.value && classes.length > 0) {
+                        classSelectDir.value = classes[0];
+                    }
+                }
+            };
+
+            const filterAndDisplayStudents = () => {
+                const students = LocalStorageService.getStudents();
+                const selectedClass = classSelectDir.value;
+                const searchTerm = searchStudentInput.value.toLowerCase().trim();
+
+                studentListContainer.innerHTML = ''; // Clear previous list
+                noStudentsMessage.classList.add('hidden');
+                generalInfoMessage.classList.add('hidden'); // Hide info message if filtering
+
+                if (!selectedClass && students.length > 0) {
+                    generalInfoMessage.classList.remove('hidden');
+                    generalInfoMessage.textContent = 'Please select a class to view students.';
+                    return;
+                }
+                 if (!selectedClass && students.length === 0) {
+                    noStudentsMessage.classList.remove('hidden');
+                    noStudentsMessage.textContent = 'No classes selected and no students registered.';
+                    return;
+                }
+
+
+                const classStudents = students.filter(student => student.assignedClass === selectedClass);
+
+                const filteredResults = classStudents.filter(student =>
+                    student.name.toLowerCase().includes(searchTerm) ||
+                    student.parentName.toLowerCase().includes(searchTerm) ||
+                    student.parentContact.toLowerCase().includes(searchTerm) ||
+                    student.emergencyContact.name.toLowerCase().includes(searchTerm) ||
+                    student.emergencyContact.phone.toLowerCase().includes(searchTerm)
+                );
+
+                if (filteredResults.length === 0) {
+                    noStudentsMessage.classList.remove('hidden');
+                    noStudentsMessage.textContent = 'No students found matching your criteria in this class.';
+                    return;
+                }
+
+                filteredResults.forEach(student => {
+                    const studentCard = document.createElement('div');
+                    studentCard.className = 'bg-blue-50 p-6 rounded-lg shadow-sm border border-blue-200';
+                    studentCard.innerHTML = `
+                        <h3 class="text-xl font-bold text-blue-700 mb-2">${student.name}</h3>
+                        <p class="text-gray-700 text-sm"><span class="font-semibold">Class:</span> ${student.assignedClass}</p>
+                        <p class="text-gray-700 text-sm"><span class="font-semibold">DOB:</span> ${student.dob}</p>
+                        <p class="text-gray-700 text-sm"><span class="font-semibold">Gender:</span> ${student.gender}</p>
+
+                        <div class="mt-4 border-t border-blue-100 pt-4">
+                            <h4 class="text-lg font-semibold text-blue-600 mb-2">Parent/Guardian</h4>
+                            <p class="text-gray-700 text-sm"><span class="font-semibold">Name:</span> ${student.parentName}</p>
+                            <p class="text-gray-700 text-sm"><span class="font-semibold">Contact:</span> ${student.parentContact}</p>
+                        </div>
+
+                        <div class="mt-4 border-t border-blue-100 pt-4">
+                            <h4 class="text-lg font-semibold text-blue-600 mb-2">Emergency Contact</h4>
+                            <p class="text-gray-700 text-sm"><span class="font-semibold">Name:</span> ${student.emergencyContact.name}</p>
+                            <p class="text-700 text-sm"><span class="font-semibold">Relationship:</span> ${student.emergencyContact.relationship}</p>
+                            <p class="text-gray-700 text-sm"><span class="font-semibold">Phone:</span> ${student.emergencyContact.phone}</p>
+                        </div>
+
+                        <div class="mt-4 border-t border-blue-100 pt-4">
+                            <p class="text-gray-700 text-sm"><span class="font-semibold">Address:</span> ${student.address}</p>
+                            ${student.notes ? `<p class="text-gray-700 text-sm mt-1"><span class="font-semibold">Notes:</span> ${student.notes}</p>` : ''}
+                        </div>
+                    `;
+                    studentListContainer.appendChild(studentCard);
+                });
+            };
+
+            classSelectDir.addEventListener('change', filterAndDisplayStudents);
+            searchStudentInput.addEventListener('input', filterAndDisplayStudents);
+            goToSetupFromDirBtn.addEventListener('click', () => activatePage('setup'));
+        });
+    </script>
+</body>
+</html>

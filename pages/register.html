@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration - School Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Student Registration</h1>
+        <nav>
+            <a href="setup.html">Setup</a>
+            <a href="register.html">Register Student</a>
+            <a href="manage.html">Manage Students</a>
+        </nav>
+
+        <form id="studentRegistrationForm">
+            <div class="form-group">
+                <label for="fullName">Full Name:</label>
+                <input type="text" id="fullName" required>
+            </div>
+            <div class="form-group">
+                <label for="classGrade">Class/Grade:</label>
+                <input type="text" id="classGrade" required>
+            </div>
+            <div class="form-group">
+                <label>Gender:</label>
+                <input type="radio" id="genderMale" name="gender" value="Male" required>
+                <label for="genderMale">Male</label>
+                <input type="radio" id="genderFemale" name="gender" value="Female">
+                <label for="genderFemale">Female</label>
+                <input type="radio" id="genderOther" name="gender" value="Other">
+                <label for="genderOther">Other</label>
+            </div>
+            <div class="form-group">
+                <label for="dob">Date of Birth:</label>
+                <input type="date" id="dob" required>
+            </div>
+            <div class="form-group">
+                <label for="guardianContact">Guardian Contact (Phone/Email):</label>
+                <input type="text" id="guardianContact" required>
+            </div>
+            <button type="submit">Register Student</button>
+            <button type="reset" class="secondary">Clear Form</button>
+        </form>
+        <div id="message" style="display: none;"></div>
+    </div>
+
+    <script>
+        // JavaScript for Student Registration Page (register.html)
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentRegistrationForm = document.getElementById('studentRegistrationForm');
+            const messageDiv = document.getElementById('message');
+
+            // Function to display messages
+            function showMessage(msg, type) {
+                messageDiv.textContent = msg;
+                messageDiv.className = `message ${type}`;
+                messageDiv.style.display = 'block';
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+
+            studentRegistrationForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const fullName = document.getElementById('fullName').value.trim();
+                const classGrade = document.getElementById('classGrade').value.trim();
+                const gender = document.querySelector('input[name="gender"]:checked');
+                const dob = document.getElementById('dob').value;
+                const guardianContact = document.getElementById('guardianContact').value.trim();
+
+                if (!fullName || !classGrade || !gender || !dob || !guardianContact) {
+                    showMessage('Please fill in all required fields.', 'error');
+                    return;
+                }
+
+                // Get existing students or initialize an empty array
+                const students = JSON.parse(localStorage.getItem('studentsData')) || [];
+
+                const newStudent = {
+                    id: Date.now(), // Simple unique ID
+                    fullName: fullName,
+                    classGrade: classGrade,
+                    gender: gender.value,
+                    dob: dob,
+                    guardianContact: guardianContact,
+                    grades: [] // Initialize with an empty grades array
+                };
+
+                students.push(newStudent);
+                localStorage.setItem('studentsData', JSON.stringify(students));
+
+                showMessage('Student registered successfully!', 'success');
+                studentRegistrationForm.reset(); // Clear the form
+            });
+        });
+    </script>
+</body>
+</html>

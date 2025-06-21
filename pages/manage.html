@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management - School Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Student Management & Grades</h1>
+        <nav>
+            <a href="setup.html">Setup</a>
+            <a href="register.html">Register Student</a>
+            <a href="manage.html">Manage Students</a>
+        </nav>
+
+        <div id="schoolInfoDisplay">
+            </div>
+
+        <div id="studentsList">
+            <h2>Registered Students</h2>
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Class/Grade</th>
+                        <th>Gender</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <p id="noStudentsMessage" style="text-align: center; margin-top: 20px; display: none;">No students registered yet. <a href="register.html">Register one now!</a></p>
+        </div>
+
+        <div id="studentModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2 id="modalTitle">Student Details</h2>
+                <form id="editStudentForm">
+                    <input type="hidden" id="editStudentId">
+                    <div class="form-group">
+                        <label for="editFullName">Full Name:</label>
+                        <input type="text" id="editFullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editClassGrade">Class/Grade:</label>
+                        <input type="text" id="editClassGrade" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Gender:</label>
+                        <input type="radio" id="editGenderMale" name="editGender" value="Male" required>
+                        <label for="editGenderMale">Male</label>
+                        <input type="radio" id="editGenderFemale" name="editGender" value="Female">
+                        <label for="editGenderFemale">Female</label>
+                        <input type="radio" id="editGenderOther" name="editGender" value="Other">
+                        <label for="editGenderOther">Other</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDob">Date of Birth:</label>
+                        <input type="date" id="editDob" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editGuardianContact">Guardian Contact:</label>
+                        <input type="text" id="editGuardianContact" required>
+                    </div>
+
+                    <h3>Grades</h3>
+                    <div id="gradesList">
+                        </div>
+                    <div class="form-group">
+                        <label for="newSubject">Subject:</label>
+                        <input type="text" id="newSubject" placeholder="e.g., Math">
+                    </div>
+                    <div class="form-group">
+                        <label for="newScore">Score:</label>
+                        <input type="number" id="newScore" placeholder="e.g., 85" min="0" max="100">
+                    </div>
+                    <button type="button" id="addGradeButton">Add Grade</button>
+                    <hr style="margin: 20px 0;">
+                    <button type="submit">Save Changes</button>
+                    <button type="button" class="secondary" id="cancelEditButton">Cancel</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="message" style="display: none;"></div>
+    </div>
+
+    <script>
+        // JavaScript for Student Management & Grades Page (manage.html)
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentTableBody = document.querySelector('#studentTable tbody');
+            const noStudentsMessage = document.getElementById('noStudentsMessage');
+            const messageDiv = document.getElementById('message');
+            const schoolInfoDisplay = document.getElementById('schoolInfoDisplay');
+
+            // Modal elements
+            const studentModal = document.getElementById('studentModal');
+            const closeButton = document.querySelector('.close-button');
+            const editStudentForm = document.getElementById('editStudentForm');
+            const editStudentIdInput = document.getElementById('editStudentId');
+            const editFullNameInput = document.getElementById('editFullName');
+            const editClassGradeInput = document.getElementById('editClassGrade');
+            const editGenderMale = document.getElementById('editGenderMale');
+            const editGenderFemale = document.getElementById('editGenderFemale');
+            const editGenderOther = document.getElementById('editGenderOther');
+            const editDobInput = document.getElementById('editDob');
+            const editGuardianContactInput = document.getElementById('editGuardianContact');
+            const gradesListDiv = document.getElementById('gradesList');
+            const newSubjectInput = document.getElementById('newSubject');
+            const newScoreInput = document.getElementById('newScore');
+            const addGradeButton = document.getElementById('addGradeButton');
+            const cancelEditButton = document.getElementById('cancelEditButton');
+
+            let currentStudents = []; // To hold the active list of students
+
+            // Function to display messages
+            function showMessage(msg, type) {
+                messageDiv.textContent = msg;
+                messageDiv.className = `message ${type}`;
+                messageDiv.style.display = 'block';
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+
+            // Function to load and display school info
+            function loadSchoolInfo() {
+                const savedSchoolInfo = localStorage.getItem('schoolInfo');
+                if (savedSchoolInfo) {
+                    const schoolInfo = JSON.parse(savedSchoolInfo);
+                    schoolInfoDisplay.innerHTML = `
+                        <h2 style="text-align: center; color: #007bff;">${schoolInfo.name || 'Your School'}</h2>
+                        <p style="text-align: center; font-size: 1.1em; color: #666;">Academic Year: <strong>${schoolInfo.academicYear || 'N/A'}</strong></p>
+                    `;
+                    if (schoolInfo.logoUrl) {
+                        const img = document.createElement('img');
+                        img.src = schoolInfo.logoUrl;
+                        img.alt = schoolInfo.name + ' Logo';
+                        img.style.maxWidth = '100px';
+                        img.style.display = 'block';
+                        img.style.margin = '10px auto 20px auto';
+                        schoolInfoDisplay.prepend(img);
+                    }
+                } else {
+                    schoolInfoDisplay.innerHTML = `<p style="text-align: center; color: #888;">School information not set. Please go to <a href="index.html">School Setup</a>.</p>`;
+                }
+            }
+
+            // Function to render the student table
+            function renderStudents() {
+                currentStudents = JSON.parse(localStorage.getItem('studentsData')) || [];
+                studentTableBody.innerHTML = ''; // Clear existing rows
+
+                if (currentStudents.length === 0) {
+                    noStudentsMessage.style.display = 'block';
+                    document.getElementById('studentTable').style.display = 'none';
+                    return;
+                } else {
+                    noStudentsMessage.style.display = 'none';
+                    document.getElementById('studentTable').style.display = 'table';
+                }
+
+                currentStudents.forEach(student => {
+                    const row = studentTableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${student.fullName}</td>
+                        <td>${student.classGrade}</td>
+                        <td>${student.gender}</td>
+                        <td class="action-buttons">
+                            <button class="secondary view-btn" data-id="${student.id}">View/Edit</button>
+                            <button class="danger delete-btn" data-id="${student.id}">Delete</button>
+                        </td>
+                    `;
+                });
+                addEventListenersToButtons();
+            }
+
+            // Add event listeners to dynamically created buttons
+            function addEventListenersToButtons() {
+                document.querySelectorAll('.view-btn').forEach(button => {
+                    button.onclick = (e) => openStudentModal(e.target.dataset.id);
+                });
+                document.querySelectorAll('.delete-btn').forEach(button => {
+                    button.onclick = (e) => deleteStudent(e.target.dataset.id);
+                });
+            }
+
+            // Open student details/edit modal
+            function openStudentModal(studentId) {
+                const student = currentStudents.find(s => s.id == studentId);
+                if (!student) {
+                    showMessage('Student not found.', 'error');
+                    return;
+                }
+
+                editStudentIdInput.value = student.id;
+                editFullNameInput.value = student.fullName;
+                editClassGradeInput.value = student.classGrade;
+                editDobInput.value = student.dob;
+                editGuardianContactInput.value = student.guardianContact;
+
+                // Set gender radio button
+                if (student.gender === 'Male') editGenderMale.checked = true;
+                else if (student.gender === 'Female') editGenderFemale.checked = true;
+                else if (student.gender === 'Other') editGenderOther.checked = true;
+
+                renderGrades(student.grades);
+                studentModal.style.display = 'block';
+            }
+
+            // Render grades for the current student in the modal
+            function renderGrades(grades) {
+                gradesListDiv.innerHTML = '';
+                if (grades && grades.length > 0) {
+                    grades.forEach((grade, index) => {
+                        const gradeItem = document.createElement('div');
+                        gradeItem.className = 'grade-item';
+                        gradeItem.innerHTML = `
+                            <span>${grade.subject}: ${grade.score}</span>
+                            <button type="button" class="danger delete-grade-btn" data-index="${index}">Delete</button>
+                        `;
+                        gradesListDiv.appendChild(gradeItem);
+                    });
+                    document.querySelectorAll('.delete-grade-btn').forEach(button => {
+                        button.onclick = (e) => deleteGrade(e.target.dataset.index);
+                    });
+                } else {
+                    gradesListDiv.innerHTML = '<p>No grades added yet.</p>';
+                }
+            }
+
+            // Add a new grade to the current student in the modal
+            addGradeButton.addEventListener('click', () => {
+                const subject = newSubjectInput.value.trim();
+                const score = newScoreInput.value.trim();
+
+                if (!subject || !score) {
+                    alert('Please enter both subject and score.');
+                    return;
+                }
+                if (isNaN(score) || score < 0 || score > 100) {
+                    alert('Score must be a number between 0 and 100.');
+                    return;
+                }
+
+                const studentId = editStudentIdInput.value;
+                const student = currentStudents.find(s => s.id == studentId);
+
+                if (student) {
+                    if (!student.grades) {
+                        student.grades = [];
+                    }
+                    student.grades.push({ subject: subject, score: parseFloat(score) });
+                    renderGrades(student.grades); // Re-render grades in the modal
+                    newSubjectInput.value = '';
+                    newScoreInput.value = '';
+                }
+            });
+
+            // Delete a grade from the current student in the modal
+            function deleteGrade(gradeIndex) {
+                const studentId = editStudentIdInput.value;
+                const student = currentStudents.find(s => s.id == studentId);
+                if (student && student.grades) {
+                    if (confirm(`Are you sure you want to delete this grade?`)) {
+                        student.grades.splice(gradeIndex, 1);
+                        renderGrades(student.grades); // Re-render grades in the modal
+                    }
+                }
+            }
+
+            // Handle student edit form submission
+            editStudentForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const studentId = editStudentIdInput.value;
+                const studentIndex = currentStudents.findIndex(s => s.id == studentId);
+
+                if (studentIndex > -1) {
+                    currentStudents[studentIndex].fullName = editFullNameInput.value.trim();
+                    currentStudents[studentIndex].classGrade = editClassGradeInput.value.trim();
+                    currentStudents[studentIndex].gender = document.querySelector('input[name="editGender"]:checked').value;
+                    currentStudents[studentIndex].dob = editDobInput.value;
+                    currentStudents[studentIndex].guardianContact = editGuardianContactInput.value.trim();
+
+                    localStorage.setItem('studentsData', JSON.stringify(currentStudents));
+                    showMessage('Student updated successfully!', 'success');
+                    renderStudents(); // Re-render the main table
+                    studentModal.style.display = 'none'; // Close the modal
+                } else {
+                    showMessage('Error: Student not found for update.', 'error');
+                }
+            });
+
+            // Delete student function
+            function deleteStudent(studentId) {
+                if (confirm('Are you sure you want to delete this student? This action cannot be undone.')) {
+                    currentStudents = currentStudents.filter(student => student.id != studentId);
+                    localStorage.setItem('studentsData', JSON.stringify(currentStudents));
+                    showMessage('Student deleted successfully!', 'success');
+                    renderStudents();
+                }
+            }
+
+            // Close modal events
+            closeButton.onclick = () => {
+                studentModal.style.display = 'none';
+            };
+            cancelEditButton.onclick = () => {
+                studentModal.style.display = 'none';
+            };
+            window.onclick = (event) => {
+                if (event.target == studentModal) {
+                    studentModal.style.display = 'none';
+                }
+            };
+
+            // Initial load
+            loadSchoolInfo();
+            renderStudents();
+        });
+    </script>
+</body>
+</html>
